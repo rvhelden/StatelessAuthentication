@@ -1,6 +1,6 @@
 ﻿using Funq;
 using ServiceStack;
-using StatelessAuthentication.Server.Services;
+using StatelessAuthentication.Server;
 
 namespace StatelessAuthentication.Tests.Support
 {

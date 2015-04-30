@@ -9,7 +9,7 @@ using StatelessAuthentication.Server.Attributes;
 using StatelessAuthentication.Server.Common;
 using StatelessAuthentication.Server.Utilities;
 
-namespace StatelessAuthentication.Server.Services
+namespace StatelessAuthentication.Server
 {
     public class AuthenticationServices : Service
     {
