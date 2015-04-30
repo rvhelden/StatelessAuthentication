@@ -36,16 +36,16 @@ The weakness of the implementation is a man in the middle attack, this can be co
 
 ## Project structure
 
-### Project: StatelessAuthentication.Client
+### StatelessAuthentication.Client
 The client used to communicate to the server, this is a simple project. the only logic in the project is contained in the Program.cs
 
-### Project: StatelessAuthentication.Models
+### StatelessAuthentication.Models
 The models project contains all the requests and responses used for servicestack and some shared logic.
 
-### Project: StatelessAuthentication.Server
+### StatelessAuthentication.Server
 This is the servicestack project to serve the client.
 An important class in this project is the RestrictAccessAttribute.
 This class inherits from the RequestFilterAttribute, so before the request made by the client is sent to the AuthorizationServices it is first send to this class and gives us the opportunity to determine if the client should have access to the method or class.
 
-### Project: StatelessAuthentication.Tests
+### StatelessAuthentication.Tests
 Here is demonstrated how it behaves.
