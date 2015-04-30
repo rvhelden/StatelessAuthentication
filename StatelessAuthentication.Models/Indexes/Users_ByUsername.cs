@@ -16,6 +16,7 @@ namespace StatelessAuthentication.Models.Indexes
         {
             Map = users => from user in users select new { user.Username };
 
+            //Used to store the salt with the username index, this ensures that only 1 query is needed to query a username and retrieve the salt associated with the username
             Store(x => x.Salt, FieldStorage.Yes);
         }
     }

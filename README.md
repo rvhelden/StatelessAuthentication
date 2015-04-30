@@ -47,5 +47,8 @@ This is the servicestack project to serve the client.
 An important class in this project is the RestrictAccessAttribute.
 This class inherits from the RequestFilterAttribute, so before the request made by the client is sent to the AuthorizationServices it is first send to this class and gives us the opportunity to determine if the client should have access to the method or class.
 
+The private key used is for demo purpose always generated at start in JwtTokenUtility.
+For production this should be replaced with an static private key.
+
 ### StatelessAuthentication.Tests
 Here is demonstrated how it behaves.

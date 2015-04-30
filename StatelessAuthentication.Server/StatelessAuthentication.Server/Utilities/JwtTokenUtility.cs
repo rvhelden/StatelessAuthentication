@@ -9,15 +9,16 @@ namespace StatelessAuthentication.Server.Utilities
 {
     public static class JwtTokenUtility
     {
-        private static readonly InMemorySymmetricSecurityKey SymetricSecurityKey;
         private static readonly SigningCredentials Credentials;
         private static readonly TokenValidationParameters ValidationParameters;
 
         static JwtTokenUtility()
         {
-            SymetricSecurityKey = new InMemorySymmetricSecurityKey(Convert.FromBase64String(HashUtility.GenerateRandomBytes(64)));
-            Credentials = new SigningCredentials(SymetricSecurityKey, "http://www.w3.org/2001/04/xmldsig-more#hmac-sha256", "http://www.w3.org/2001/04/xmlenc#sha256");
-            ValidationParameters = new TokenValidationParameters { IssuerSigningKey = SymetricSecurityKey, ValidateAudience = false, ValidIssuer = "issuer" };
+            //The private key used to secure the token, this should be a static shared key
+            //And not an random key like this, but this is fine for demo purpose
+            var symetricSecurityKey = new InMemorySymmetricSecurityKey(Convert.FromBase64String(HashUtility.GenerateRandomBytes(64)));
+            Credentials = new SigningCredentials(symetricSecurityKey, "http://www.w3.org/2001/04/xmldsig-more#hmac-sha256", "http://www.w3.org/2001/04/xmlenc#sha256");
+            ValidationParameters = new TokenValidationParameters { IssuerSigningKey = symetricSecurityKey, ValidateAudience = false, ValidIssuer = "issuer" };
         }
 
         /// <summary>
@@ -31,6 +32,7 @@ namespace StatelessAuthentication.Server.Utilities
             var tokenHandler = new JwtSecurityTokenHandler();
 
             var now = DateTime.UtcNow;
+            //The contents of the JWT token
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(new[] { new Claim(ClaimTypes.Name, username), new Claim(ClaimTypes.Role, role.ToString()) }),
