@@ -139,10 +139,76 @@ public override void Configure(Container container)
 }
 ```
 
+#### The Salt function
+The salt function enables the client to get the salt by username.
+We have used a the Store function in RavenDB on the index Users_ByUsername that when we use this index, we also have the salt that we want to return to the server without having to execute an other query
 
+```cs
+public class UsersByUsername : AbstractIndexCreationTask<User>
+{
+    public class Projection
+    {
+        public string Salt { get; set; }
+    }
 
+    public UsersByUsername()
+    {
+        Map = users => from user in users select new { user.Username };
+
+        //Used to store the salt with the username index, 
+		//this ensures that only 1 query is needed to query a username and 
+		//retrieve the salt associated with the username
+        Store(x => x.Salt, FieldStorage.Yes);
+    }
+}
+```
+
+Here is where we use it and return the salt if found back to the client.
+
+```cs
+public SaltResponse Get(SaltRequest request)
+{
+    var projection = _session.Query<User, UsersByUsername>()
+        .Where(x => x.Username == request.Username)
+        .ProjectFromIndexFieldsInto<UsersByUsername.Projection>()
+        .ToList()
+        .FirstOrDefault();
+
+    if (projection == null)
+        throw HttpError.NotFound("Unknown username and password");
+
+    return new SaltResponse { Salt = projection.Salt };
+}
+```
+
+#### The login function
+
+If we have found the user and the hashed password matches then we generate a token and return it to the client
+
+```cs
+public object Post(LoginRequest request)
+{
+    var user = _session.Query<User, UsersByUsername>()
+					   .FirstOrDefault(u => u.Username == request.Username);
+
+    if (user == null)
+        throw HttpError.NotFound("Unknown username and password");
+
+    if (!string.Equals(user.Password, request.Password))
+        throw HttpError.NotFound("Unknown username and password");
+
+    var token = JwtTokenUtility.GenerateToken(request.Username, Role.User);
+
+    return new LoginResponse {Result = token};
+}
+```
+
+#### The RestrictAccessAttribute
 An important class in this project is the RestrictAccessAttribute.
 This class inherits from the RequestFilterAttribute, so before the request made by the client is sent to the AuthorizationServices it is first send to this class and gives us the opportunity to determine if the client should have access to the method or class.
+
+This attribute can be used on a method and on a class to restrict the access.
+I have used the Role enum to determine access, but almost anything can be used to determine the access.
 
 ```cs
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
