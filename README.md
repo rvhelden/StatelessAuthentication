@@ -15,6 +15,7 @@ This implementation uses the following technologies:
 ## The process
 
 The process of letting a client login a secure way and obtain a token is done as followed:
+
 1. The client sends the username to the server to obtain the salt associated with the account (Salt is not a secret, a salt is merly there to prevent a rainbowtable attack, and the salt itself isn't a password and thus should't be treated as one https://crackstation.net/hashing-security.htm)
 2. The client uses the salt to hash the password provided by the user.
 3. The client sends the username and hashed password to the server.
