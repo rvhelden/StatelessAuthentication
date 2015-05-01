@@ -84,7 +84,8 @@ public class AuthenticationServices : Service
 
     public object Post(LoginRequest request)
     {
-        var user = _session.Query<User, UsersByUsername>().FirstOrDefault(u => u.Username == request.Username);
+        var user = _session.Query<User, UsersByUsername>()
+						   .FirstOrDefault(u => u.Username == request.Username);
 
         if (user == null)
             throw HttpError.NotFound("Unknown username and password");
@@ -128,9 +129,11 @@ public override void Configure(Container container)
     var store = new EmbeddableDocumentStore { DataDirectory = "Data" }.Initialize();
 
     container.Register(store);
-    container.Register(c => c.Resolve<IDocumentStore>().OpenSession()).ReusedWithin(ReuseScope.Request);
+    container.Register(c => c.Resolve<IDocumentStore>().OpenSession())
+			 	.ReusedWithin(ReuseScope.Request);
 
-    IndexCreation.CreateIndexes(typeof(UsersByUsername).Assembly, container.Resolve<IDocumentStore>());
+    IndexCreation.CreateIndexes(typeof(UsersByUsername).Assembly, 
+								container.Resolve<IDocumentStore>());
 
     SetupDemoUser();
 }
@@ -183,9 +186,18 @@ static JwtTokenUtility()
 {
     //The private key used to secure the token, this should be a static shared key
     //And not an random key like this, but this is fine for demo purpose
-    var symetricSecurityKey = new InMemorySymmetricSecurityKey(Convert.FromBase64String(HashUtility.GenerateRandomBytes(64)));
-    Credentials = new SigningCredentials(symetricSecurityKey, "http://www.w3.org/2001/04/xmldsig-more#hmac-sha256", "http://www.w3.org/2001/04/xmlenc#sha256");
-    ValidationParameters = new TokenValidationParameters { IssuerSigningKey = symetricSecurityKey, ValidateAudience = false, ValidIssuer = "issuer" };
+	var randomKey = Convert.FromBase64String(HashUtility.GenerateRandomBytes(64));
+
+    var symetricSecurityKey = new InMemorySymmetricSecurityKey(randomKey);
+    Credentials = new SigningCredentials(symetricSecurityKey, 
+										 "http://www.w3.org/2001/04/xmldsig-more#hmac-sha256", 
+										 "http://www.w3.org/2001/04/xmlenc#sha256");
+    ValidationParameters = new TokenValidationParameters 
+	{ 
+		IssuerSigningKey = symetricSecurityKey, 
+		ValidateAudience = false, 
+		ValidIssuer = "issuer" 
+	};
 }
 ```
 
@@ -308,7 +320,11 @@ public class AuthenticationServicesTests
         {
             var client = new JsonServiceClient(ListeningOn);
             var saltResponse = client.Get(new SaltRequest { Username = Username });
-            var loginResponse = client.Post(new LoginRequest { Username = Username, Password = HashUtility.Hash(Password, saltResponse.Salt) });
+            var loginResponse = client.Post(new LoginRequest 
+			{ 
+				Username = Username, 
+				Password = HashUtility.Hash(Password, saltResponse.Salt) 
+			});
 
             Assert.That(loginResponse.Result, Is.Not.Empty);
         }
@@ -325,7 +341,11 @@ public class AuthenticationServicesTests
         {
             var client = new JsonServiceClient(ListeningOn);
             var saltResponse = client.Get(new SaltRequest { Username = Username });
-            var loginResponse = client.Post(new LoginRequest { Username = Username, Password = HashUtility.Hash(Password, saltResponse.Salt) });
+            var loginResponse = client.Post(new LoginRequest 
+			{ 
+				Username = Username, 
+				Password = HashUtility.Hash(Password, saltResponse.Salt) 
+			});
 
             client.Headers["token"] = loginResponse.Result;
             var limitedResponse = client.Get(new LimitedAccessRequest());
@@ -362,7 +382,11 @@ public class AuthenticationServicesTests
         {
             var client = new JsonServiceClient(ListeningOn);
             var saltResponse = client.Get(new SaltRequest { Username = Username });
-            var loginResponse = client.Post(new LoginRequest { Username = Username, Password = HashUtility.Hash(Password, saltResponse.Salt) });
+            var loginResponse = client.Post(new LoginRequest 
+			{ 
+				Username = Username, 
+				Password = HashUtility.Hash(Password, saltResponse.Salt) 
+			});
 
             client.Headers["token"] = loginResponse.Result;
             client.Get(new AdminAccessRequest());
